@@ -8,9 +8,11 @@ CONFIG_FILE_PATH := $(PROJECT_DIR)/$(CONFIG_FILE)
 
 # Git repository configuration file
 GITREPO_CONFIG_SOURCE := scriptsToShip/Makefile.gitRepo.config
-GITREPO_CONFIG_DEST := $(PROJECT_DIR)/Makefile
+GITREPO_CONFIG_DEST := $(LCO_DIR)/Makefile
 
 USER_CONFIG := user-provided-odk-config.yaml
+
+DOCS_WORKFLOW := $(LCO_DIR)/.github/workflows/docs.yml
 
 # Git configuration (can be overridden)
 GIT_AUTHOR_NAME ?= $(shell git config user.name 2>/dev/null || echo "")
@@ -31,7 +33,7 @@ help:
 	@echo "  Set Git email: git config --global user.email 'your.email@example.com'"
 	@echo "  Or use: make setup GIT_AUTHOR_NAME='Your Name' GIT_AUTHOR_EMAIL='your@email.com'"
 
-setup: $(LCO_DIR)
+setup: $(LCO_DIR) $(GITREPO_CONFIG_DEST) $(DOCS_WORKFLOW)
 	@echo "Setup complete!"
 
 check-config:
@@ -79,6 +81,10 @@ $(GITREPO_CONFIG_DEST): $(PROJECT_DIR)
 	@cp $(GITREPO_CONFIG_SOURCE) $(GITREPO_CONFIG_DEST)
 	@echo "Git repository config copied to: $(GITREPO_CONFIG_DEST)"
 
+$(DOCS_WORKFLOW): $(LCO_DIR)
+	@echo "Updating docs workflow to handle missing mkdocs.yaml"
+	@cp scriptsToShip/docs-workflow-template.yml $(DOCS_WORKFLOW)
+
 copy-gitrepo-config: $(GITREPO_CONFIG_DEST)
 	@echo "Git repository configuration file copy complete"
 
@@ -96,3 +102,11 @@ status:
 clean:
 	@rm -rf $(PROJECT_DIR)
 	@echo "Project removed"
+
+move-odk-generated-ontology:
+	@test -d $(PROJECT_DIR) || { echo "Error: Project directory $(PROJECT_DIR) does not exist run make setup"; exit 1; }
+	@echo "Project: EXISTS"
+	@echo "Moving ODK generated ontology to developOntologies"
+	@rm -rf ~/workspace/ai-apps/developOntologies/*
+	@cp -r $(RFD_DEV_SPACE_HOME)/* ~/workspace/ai-apps/developOntologies
+	@echo "ODK generated ontology moved to developOntologies"
