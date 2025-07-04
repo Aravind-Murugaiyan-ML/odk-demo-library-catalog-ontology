@@ -1,0 +1,31 @@
+id: lco
+title: "Library Catalog Ontology"
+
+description: "A learning ontology for modeling library catalogs, books, authors, publishers, and their relationships"
+github_org: Aravind-Murugaiyan-ML
+repo: sample-ontology-library-catalog
+git_main_branch: main
+license: CC0
+
+release_artefacts:
+  - base
+  - full
+  - simple
+primary_release: full
+export_formats:
+  - owl
+  - obo
+  - json
+import_group:
+  products:
+    - id: ro
+    - id: pato
+    - id: omo
+reasoner: ELK
+robot_java_args: "-Xmx8G"
+robot_report:
+  use_labels: TRUE
+  fail_on: ERROR
+  custom_profile: TRUE
+  report_on:
+    - edit
