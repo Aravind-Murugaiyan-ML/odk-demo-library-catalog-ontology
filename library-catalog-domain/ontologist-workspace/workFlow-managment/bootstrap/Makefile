@@ -6,6 +6,10 @@ ODK_SCRIPT := $(PROJECT_DIR)/seed-via-docker.sh
 CONFIG_FILE := sample-ontology-library-catalog-odk-config.yaml
 CONFIG_FILE_PATH := $(PROJECT_DIR)/$(CONFIG_FILE)
 
+# Git repository configuration file
+GITREPO_CONFIG_SOURCE := scriptsToShip/Makefile.gitRepo.config
+GITREPO_CONFIG_DEST := $(PROJECT_DIR)/Makefile
+
 USER_CONFIG := user-provided-odk-config.yaml
 
 # Git configuration (can be overridden)
@@ -68,6 +72,16 @@ $(LCO_DIR): $(ODK_SCRIPT) $(CONFIG_FILE_PATH)
 		ODK_GITNAME="$(GIT_AUTHOR_NAME)" \
 		ODK_GITEMAIL="$(GIT_AUTHOR_EMAIL)" \
 		./seed-via-docker.sh -c -C $(CONFIG_FILE)
+
+$(GITREPO_CONFIG_DEST): $(PROJECT_DIR)
+	@echo "Copying git repository config to project directory"
+	@test -f $(GITREPO_CONFIG_SOURCE) || { echo "Error: $(GITREPO_CONFIG_SOURCE) not found"; exit 1; }
+	@cp $(GITREPO_CONFIG_SOURCE) $(GITREPO_CONFIG_DEST)
+	@echo "Git repository config copied to: $(GITREPO_CONFIG_DEST)"
+
+copy-gitrepo-config: $(GITREPO_CONFIG_DEST)
+	@echo "Git repository configuration file copy complete"
+
 status:
 	@echo "Project Status:"
 	@test -f $(USER_CONFIG) && echo "User config: EXISTS" || echo "User config: MISSING"
@@ -75,6 +89,8 @@ status:
 	@test -n "$(GIT_AUTHOR_EMAIL)" && echo "Git email: $(GIT_AUTHOR_EMAIL)" || echo "Git email: NOT SET"
 	@test -d $(PROJECT_DIR) && echo "Project: EXISTS" || echo "Project: MISSING"
 	@test -f $(CONFIG_FILE_PATH) && echo "Project config: COPIED" || echo "Project config: MISSING"
+	@test -f $(GITREPO_CONFIG_SOURCE) && echo "Git repo config source: EXISTS" || echo "Git repo config source: MISSING"
+	@test -f $(GITREPO_CONFIG_DEST) && echo "Git repo config destination: COPIED" || echo "Git repo config: MISSING"
 	@test -d $(LCO_DIR) && echo "ODK: GENERATED" || echo "ODK: MISSING"
 
 clean:
