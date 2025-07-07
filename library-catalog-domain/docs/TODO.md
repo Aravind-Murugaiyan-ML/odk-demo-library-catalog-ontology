@@ -1,3 +1,15 @@
+Phase 0: Decision Framework and Preprocessing
+Phase 1: Repository Setup
+Phase 2: Core Ontology Development
+Phase 3: AI Integration Setup
+
+# Phase-0
+## Decision Framework:
+
+- [ ] Not-in-Scope Principle
+- [ ] Something Simpler Works Principle
+- [ ] Killer Use Case Condition
+
 ## Pre-processing
 
 - [ ] Preprocessing
@@ -14,6 +26,7 @@
 
     - [ ] Relationship Mapping
 
+# Phase-1
 ## Ontology Development Kit Setup
 
 - [ ] ODK Setup
@@ -40,19 +53,19 @@
 
         - [x] Initial Term Creation
 
-            - [x] Basic classes template
+            - [ ] Basic classes template
 
-            - [x] Properties template
+            - [ ] Properties template
 
         - [x] Sample Data Creation
 
-            - [x] Sample data template with relationships
+            - [ ] Sample data template with relationships
 
 - [ ] CI Process
 
     - [x] Build Process
 
-        - [x] Build locally and configure Build pipeline on repo
+        - [ ] Build locally and configure Build pipeline on repo
 
         - [ ] Run tests for validation and configure test pipeline on repo
 
@@ -82,10 +95,7 @@
 
         - [ ] Agent Agnostic workflow manager
 
-  
-## Enhancements
-
-  
+## Enhancements  
 
 - [ ] Add more complex classes: Series, Edition, Translation
 
@@ -97,9 +107,7 @@
 
 - [ ] Create design patterns: Standard ways to model book series
 
-## Advanced Features
-
-  
+## Advanced Features  
 
 - [ ] Implement reasoning rules: Infer that if a book is available at a library, and the library is in a city, then the book is available in that city
 
