@@ -1,7 +1,9 @@
-Phase 0: Decision Framework and Preprocessing
-Phase 1: Repository Setup
-Phase 2: Core Ontology Development
-Phase 3: AI Integration Setup
+# Different Phases
+
+- Phase 0: Decision Framework and Preprocessing.
+- Phase 1: Repository Setup.
+- Phase 2: Core Ontology Development.
+- Phase 3: AI Integration Setup.
 
 # Phase-0
 ## Decision Framework:
