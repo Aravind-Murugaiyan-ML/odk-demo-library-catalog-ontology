@@ -1,0 +1,36 @@
+- [ ] Preprocessing
+	- [ ] Text Understanding
+	- [ ] Tokenization
+	- [ ] Stop Word Removal
+	- [ ] Keyword Identification
+	- [ ] Keyword Extraction
+	- [ ] Relationship Mapping
+- [ ] ODK Setup
+	- [ ] Create a project/repository to set up ontology development environment
+	- [ ] GitHub account creation
+	- [ ] Configure Git
+	- [ ] Pull ODK container and configure to utilize as a tool for creating development environment
+		- [ ] Fix memory issue
+	- [ ] Configure odk using yaml file
+	- [ ] Scaffold the ontology development workspace
+	- [ ] Validate the scaffolded project
+- [ ] Ontology Library Creation
+	- [ ] Ontology Design
+		- [ ] Initial Term Creation
+		- [ ] Sample Data Creation
+- [ ] CI Process
+	- [ ] Build Process
+		- [ ] Build locally and configure Build pipeline on repo
+		- [ ] Run tests for validation and configure test pipeline on repo
+	- [ ] Create SPARQL Queries and use that for testing
+	- [ ] GitHub Integration
+		- [ ] Push to Github
+		- [ ] Verify Github Actions
+		- [ ] Configure Continuous documentation
+- [ ] CD Process
+	- [ ] Release management from Makefile
+- [ ] Design workflow for automated ontology design, development, testing, CI/CD
+- [ ] AI Workflow Automation
+	- [ ] Setup Claude code to follow 
+	- [ ] Setup Goose as AI Agent to create workflow
+		- [ ] Agent Agnostic workflow manager
