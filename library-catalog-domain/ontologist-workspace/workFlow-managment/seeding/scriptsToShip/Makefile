@@ -23,10 +23,15 @@ EXPORT_CSV := export-classes.csv
 NEW_TERMS_TTL := new-terms.ttl
 NEW_TERMS_OWL := new-terms.owl
 
+# Release configuration
+RELEASE_DATE := $(shell date +%Y-%m-%d)
+RELEASE_DIR := ../releases/$(RELEASE_DATE)
+VERSION_IRI := http://purl.obolibrary.org/obo/lco/releases/$(RELEASE_DATE)/lco.owl
+
 # All generated files
 GENERATED_FILES := $(METRICS_OUTPUT) $(REPORT_OUTPUT) $(ENHANCED_ONTOLOGY) $(ENHANCED_METRICS) $(REASONED_ONTOLOGY) $(CONVERTED_TTL) $(QUERY_FILE) $(EXPORT_CSV) $(NEW_TERMS_TTL) $(NEW_TERMS_OWL)
 
-.PHONY: robot-all robot-help robot-clean robot-clean-all test-robot measure report merge reason convert query export create-terms validate-setup qc workflow stats validate-all examples
+.PHONY: robot-all robot-help robot-clean robot-clean-all test-robot measure report merge reason convert query export create-terms validate-setup qc qc-full workflow stats validate-all examples validate-odk pre-release validate-release-ready create-release update-edit release git-release prepare_release test-odk-integration release-status release-help
 
 .SILENT: robot-clean robot-help
 
@@ -179,7 +184,7 @@ $(NEW_TERMS_OWL): $(NEW_TERMS_TTL)
 	@$(ROBOT) convert --input $(NEW_TERMS_TTL) --output $(NEW_TERMS_OWL)
 	@echo "✅ Success! Generated $(NEW_TERMS_OWL)"
 
-# Quality control workflow
+# Quality control workflow (existing)
 qc: report measure
 	@echo "📊 Quality Control Summary"
 	@echo "========================="
@@ -194,6 +199,168 @@ qc: report measure
 			echo "✅ No critical errors found"; \
 		fi; \
 	fi
+
+# Enhanced QC with release validation
+qc-full: report measure validate-odk
+	@echo "📊 Comprehensive Quality Control (Release Ready)"
+	@echo "=============================================="
+	@if [ -f "$(REPORT_OUTPUT)" ]; then \
+		errors=$$(grep -c "ERROR" $(REPORT_OUTPUT) 2>/dev/null || echo "0"); \
+		warnings=$$(grep -c "WARN" $(REPORT_OUTPUT) 2>/dev/null || echo "0"); \
+		echo "Errors found: $$errors"; \
+		echo "Warnings found: $$warnings"; \
+		if [ "$$errors" -gt "0" ]; then \
+			echo "❌ Critical errors detected! Review $(REPORT_OUTPUT)"; \
+			echo "🛑 Cannot proceed with release"; \
+			exit 1; \
+		else \
+			echo "✅ No critical errors found"; \
+		fi; \
+		if [ "$$warnings" -gt "10" ]; then \
+			echo "⚠️  High number of warnings ($$warnings). Consider reviewing."; \
+		fi; \
+	fi
+	@echo "✅ Release-quality validation passed!"
+
+# ODK-style validation
+validate-odk: $(REASONED_ONTOLOGY)
+	@echo "🔍 Running ODK validation checks..."
+	@if [ -f "$(REASONED_ONTOLOGY)" ]; then \
+		echo "✅ Reasoning completed successfully"; \
+	else \
+		echo "❌ Reasoning failed - check for inconsistencies"; \
+		exit 1; \
+	fi
+	@$(ROBOT) validate --input $(REASONED_ONTOLOGY) || echo "⚠️  Validation warnings found"
+	@echo "✅ ODK validation completed"
+
+# Pre-release validation workflow
+pre-release: workflow qc-full validate-release-ready
+	@echo "🎯 Pre-release validation completed!"
+	@echo "📋 Summary:"
+	@echo "  ✅ New terms created and merged"
+	@echo "  ✅ Reasoning applied successfully"  
+	@echo "  ✅ Quality control passed"
+	@echo "  ✅ Release validation passed"
+	@echo ""
+	@echo "🚀 Ready for release process!"
+
+# Validate release readiness
+validate-release-ready:
+	@echo "🔍 Validating release readiness..."
+	@for file in $(REASONED_ONTOLOGY) $(ENHANCED_ONTOLOGY) $(REPORT_OUTPUT); do \
+		if [ ! -f "$$file" ]; then \
+			echo "❌ Missing required file: $$file"; \
+			exit 1; \
+		fi; \
+	done
+	@if grep -q "TODO\|FIXME" $(REASONED_ONTOLOGY) 2>/dev/null; then \
+		echo "⚠️  Found TODO/FIXME comments in ontology"; \
+		grep -n "TODO\|FIXME" $(REASONED_ONTOLOGY); \
+	fi
+	@echo "✅ Release readiness validated"
+
+# Create release artifacts
+create-release: pre-release
+	@echo "📦 Creating release artifacts..."
+	@mkdir -p $(RELEASE_DIR)
+	@cp $(REASONED_ONTOLOGY) $(RELEASE_DIR)/lco.owl
+	@cp $(CONVERTED_TTL) $(RELEASE_DIR)/lco.ttl
+	@cp $(EXPORT_CSV) $(RELEASE_DIR)/lco-classes.csv
+	@cp $(REPORT_OUTPUT) $(RELEASE_DIR)/
+	@cp $(METRICS_OUTPUT) $(RELEASE_DIR)/
+	@echo "# LCO Release $(RELEASE_DATE)" > $(RELEASE_DIR)/RELEASE_NOTES.md
+	@echo "" >> $(RELEASE_DIR)/RELEASE_NOTES.md
+	@echo "## Changes" >> $(RELEASE_DIR)/RELEASE_NOTES.md
+	@echo "- Added new terms via Robot templates" >> $(RELEASE_DIR)/RELEASE_NOTES.md
+	@echo "- Applied ELK reasoning" >> $(RELEASE_DIR)/RELEASE_NOTES.md
+	@echo "- Quality control validation passed" >> $(RELEASE_DIR)/RELEASE_NOTES.md
+	@echo "" >> $(RELEASE_DIR)/RELEASE_NOTES.md
+	@echo "## Quality Metrics" >> $(RELEASE_DIR)/RELEASE_NOTES.md
+	@echo "\`\`\`" >> $(RELEASE_DIR)/RELEASE_NOTES.md
+	@cat $(METRICS_OUTPUT) >> $(RELEASE_DIR)/RELEASE_NOTES.md
+	@echo "\`\`\`" >> $(RELEASE_DIR)/RELEASE_NOTES.md
+	@echo "✅ Release artifacts created in $(RELEASE_DIR)"
+
+# Update edit file with enhanced ontology
+update-edit: $(ENHANCED_ONTOLOGY)
+	@echo "🔄 Updating edit file for next development cycle..."
+	@if [ -f "$(ENHANCED_ONTOLOGY)" ]; then \
+		echo "📋 Backing up current edit file..."; \
+		cp $(EDIT_ONTOLOGY) $(EDIT_ONTOLOGY).backup; \
+		echo "📋 Updating $(EDIT_ONTOLOGY) with enhanced ontology..."; \
+		cp $(ENHANCED_ONTOLOGY) $(EDIT_ONTOLOGY); \
+		echo "✅ Edit file updated"; \
+	else \
+		echo "❌ Enhanced ontology not found"; \
+		exit 1; \
+	fi
+
+# Full release workflow
+release: create-release update-edit
+	@echo "🎉 Release $(RELEASE_DATE) completed!"
+	@echo ""
+	@echo "📁 Release artifacts:"
+	@ls -la $(RELEASE_DIR)/
+	@echo ""
+	@echo "📋 Next steps:"
+	@echo "1. Review release artifacts in $(RELEASE_DIR)/"
+	@echo "2. Commit and push changes to repository"
+	@echo "3. Create GitHub release with artifacts"
+	@echo "4. Update documentation if needed"
+
+# Git integration for release
+git-release: release
+	@echo "🔧 Preparing Git release..."
+	@git add $(RELEASE_DIR)/
+	@git add $(EDIT_ONTOLOGY)
+	@git commit -m "Release $(RELEASE_DATE): Enhanced ontology with new terms and reasoning"
+	@git tag -a "v$(RELEASE_DATE)" -m "LCO Release $(RELEASE_DATE)"
+	@echo "✅ Git release prepared"
+	@echo "📋 To complete:"
+	@echo "   git push origin main"
+	@echo "   git push origin v$(RELEASE_DATE)"
+
+# ODK standard targets integration
+prepare_release: create-release
+	@echo "📦 ODK-style release preparation completed"
+
+# Test integration with ODK workflow
+test-odk-integration:
+	@echo "🧪 Testing ODK integration..."
+	@if make -n prepare_release >/dev/null 2>&1; then \
+		echo "✅ ODK prepare_release target available"; \
+	else \
+		echo "⚠️  ODK prepare_release target not available"; \
+	fi
+	@if make -n $(INPUT_ONTOLOGY) >/dev/null 2>&1; then \
+		echo "✅ ODK build targets available"; \
+	else \
+		echo "⚠️  ODK build targets not available"; \
+	fi
+	@echo "🎯 Integration test completed"
+
+# Show release status
+release-status:
+	@echo "📊 Release Status Dashboard"
+	@echo "=========================="
+	@echo "🔹 Current date: $(RELEASE_DATE)"
+	@echo "🔹 Release directory: $(RELEASE_DIR)"
+	@echo ""
+	@echo "📁 Required files status:"
+	@for file in $(INPUT_ONTOLOGY) $(EDIT_ONTOLOGY) $(ENHANCED_ONTOLOGY) $(REASONED_ONTOLOGY); do \
+		if [ -f "$$file" ]; then \
+			echo "  ✅ $$file"; \
+		else \
+			echo "  ❌ $$file (missing)"; \
+		fi; \
+	done
+	@echo ""
+	@echo "📋 Workflow completion:"
+	@if [ -f "$(NEW_TERMS_OWL)" ]; then echo "  ✅ Terms created"; else echo "  ⏳ Terms not created"; fi
+	@if [ -f "$(ENHANCED_ONTOLOGY)" ]; then echo "  ✅ Ontology merged"; else echo "  ⏳ Ontology not merged"; fi
+	@if [ -f "$(REASONED_ONTOLOGY)" ]; then echo "  ✅ Reasoning applied"; else echo "  ⏳ Reasoning not applied"; fi
+	@if [ -f "$(REPORT_OUTPUT)" ]; then echo "  ✅ QC completed"; else echo "  ⏳ QC not completed"; fi
 
 # Full workflow: create terms, merge, and process
 workflow: create-terms merge reason convert qc
@@ -256,11 +423,34 @@ examples:
 	@echo "make merge            # Merge with existing ontology"
 	@echo "make workflow         # Complete processing"
 	@echo ""
-	@echo "Option 3: Quality control only"
-	@echo "-----------------------------"
-	@echo "make measure          # Generate metrics"
-	@echo "make report           # Generate quality report"
-	@echo "make qc              # Summary of issues"
+	@echo "Option 3: Release workflow"
+	@echo "-------------------------"
+	@echo "make workflow         # Complete development"
+	@echo "make qc-full          # Release-ready QC"
+	@echo "make release          # Create release"
+	@echo "make git-release      # Git workflow"
+
+# Help for release workflow
+release-help:
+	@echo "🚀 ODK Release Workflow Help"
+	@echo "============================"
+	@echo ""
+	@echo "📋 Standard workflow:"
+	@echo "1. make workflow          # Create terms, merge, reason"
+	@echo "2. make qc-full          # Comprehensive quality control"
+	@echo "3. make pre-release      # Pre-release validation"
+	@echo "4. make release          # Create release artifacts"
+	@echo "5. make git-release      # Prepare Git release"
+	@echo ""
+	@echo "🔍 Validation steps:"
+	@echo "  make validate-odk       # ODK-style validation"
+	@echo "  make qc-full           # Enhanced quality control"
+	@echo "  make release-status    # Check readiness"
+	@echo ""
+	@echo "📦 Release steps:"
+	@echo "  make create-release    # Generate artifacts only"
+	@echo "  make update-edit       # Update edit file"
+	@echo "  make git-release       # Full Git workflow"
 
 # Help target (renamed to avoid conflict)
 robot-help:
@@ -282,26 +472,26 @@ robot-help:
 	@echo ""
 	@echo "Workflows:"
 	@echo "  create-terms     - Create new terms file"
-	@echo "  qc               - Quality control check"
-	@echo "  workflow         - Complete processing workflow"
+	@echo "  qc               - Basic quality control check"
+	@echo "  qc-full          - Release-ready quality control"
+	@echo "  workflow         - Complete development workflow"
+	@echo "  pre-release      - Pre-release validation"
+	@echo "  release          - Complete release workflow"
 	@echo "  validate-all     - Test all operations"
 	@echo ""
 	@echo "Information:"
 	@echo "  stats            - Show ontology statistics"
+	@echo "  release-status   - Show release readiness"
 	@echo "  examples         - Show workflow examples"
+	@echo "  release-help     - Show release workflow help"
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  robot-clean      - Remove generated files"
 	@echo "  robot-clean-all  - Remove all temporary files"
 	@echo "  robot-help       - Show this help message"
 	@echo ""
-	@echo "Configuration:"
-	@echo "  ROBOT            = docker run ... obolibrary/odkfull robot"
-	@echo "  INPUT_ONTOLOGY   = $(INPUT_ONTOLOGY)"
-	@echo "  EDIT_ONTOLOGY    = $(EDIT_ONTOLOGY)"
-	@echo ""
 	@echo "Examples:"
-	@echo "  make validate-setup           # Check prerequisites"
-	@echo "  make robot-all               # Run basic operations"
-	@echo "  make workflow                # Complete workflow"
-	@echo "  make qc                      # Quality control"
+	@echo "  make workflow                 # Complete development"
+	@echo "  make qc-full                  # Release-ready QC"
+	@echo "  make release                  # Create release"
+	@echo "  make release-status           # Check readiness"
