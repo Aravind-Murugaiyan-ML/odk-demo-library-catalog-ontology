@@ -7,7 +7,7 @@ CONFIG_FILE := sample-ontology-library-catalog-odk-config.yaml
 CONFIG_FILE_PATH := $(PROJECT_DIR)/$(CONFIG_FILE)
 
 # Git repository configuration file
-GITREPO_CONFIG_SOURCE := scriptsToShip/Makefile.gitRepo.config
+GITREPO_CONFIG_SOURCE := scriptsToShip/Makefile
 GITREPO_CONFIG_DEST := $(LCO_DIR)/Makefile
 
 USER_CONFIG := user-provided-odk-config.yaml
@@ -83,7 +83,7 @@ $(GITREPO_CONFIG_DEST): $(PROJECT_DIR)
 
 $(DOCS_WORKFLOW): $(LCO_DIR)
 	@echo "Updating docs workflow to handle missing mkdocs.yaml"
-	@cp scriptsToShip/docs-workflow-template.yml $(DOCS_WORKFLOW)
+	@cp scriptsToShip/mkdocs-github-ci-workflow-template.yml $(DOCS_WORKFLOW)
 
 copy-gitrepo-config: $(GITREPO_CONFIG_DEST)
 	@echo "Git repository configuration file copy complete"

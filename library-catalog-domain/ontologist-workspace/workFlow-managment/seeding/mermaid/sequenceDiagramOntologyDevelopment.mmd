@@ -1,0 +1,131 @@
+sequenceDiagram
+    participant User
+    participant Make
+    participant Validate as validate-setup
+    participant Robot as Robot Docker
+    participant Files as File System
+    
+    Note over User,Files: Complete Workflow Execution
+    
+    %% Basic workflow (make all)
+    User->>Make: make all
+    Make->>Validate: Check setup
+    Validate->>Files: Check lco.owl exists
+    Files-->>Validate: ✅ File found
+    Validate-->>Make: ✅ Validation passed
+    
+    par Parallel Operations
+        Make->>Robot: measure --input lco.owl --output metrics.tsv
+        Robot->>Files: Generate metrics.tsv
+        Files-->>Robot: ✅ Created
+        Robot-->>Make: ✅ Metrics generated
+    and
+        Make->>Robot: report --input lco.owl --output report.tsv
+        Robot->>Files: Generate report.tsv
+        Files-->>Robot: ✅ Created
+        Robot-->>Make: ✅ Report generated
+    and
+        Make->>Robot: reason --reasoner ELK --input lco.owl --output lco-reasoned.owl
+        Robot->>Files: Generate lco-reasoned.owl
+        Files-->>Robot: ✅ Created
+        Robot-->>Make: ✅ Reasoning completed
+    and
+        Make->>Robot: convert --input lco.owl --format ttl --output lco-converted.ttl
+        Robot->>Files: Generate lco-converted.ttl
+        Files-->>Robot: ✅ Created
+        Robot-->>Make: ✅ Conversion completed
+    end
+    
+    Make-->>User: ✅ All operations completed
+    
+    Note over User,Files: Full Workflow (make workflow)
+    
+    User->>Make: make workflow
+    
+    %% Create terms step
+    Make->>Files: Create new-terms.ttl
+    Files-->>Make: ✅ TTL created
+    Make->>Robot: convert --input new-terms.ttl --output new-terms.owl
+    Robot->>Files: Generate new-terms.owl
+    Files-->>Robot: ✅ Created
+    Robot-->>Make: ✅ Terms converted
+    
+    %% Merge step
+    Make->>Robot: merge --input lco-edit.owl --input new-terms.owl --output lco-enhanced.owl
+    Robot->>Files: Generate lco-enhanced.owl
+    Files-->>Robot: ✅ Created
+    Robot-->>Make: ✅ Merge completed
+    
+    %% Reasoning step
+    Make->>Robot: reason --reasoner ELK --input lco.owl --output lco-reasoned.owl
+    Robot->>Files: Generate lco-reasoned.owl
+    Files-->>Robot: ✅ Created
+    Robot-->>Make: ✅ Reasoning completed
+    
+    %% Conversion step
+    Make->>Robot: convert --input lco.owl --format ttl --output lco-converted.ttl
+    Robot->>Files: Generate lco-converted.ttl
+    Files-->>Robot: ✅ Created
+    Robot-->>Make: ✅ Conversion completed
+    
+    %% Quality control step
+    Make->>Robot: report --input lco.owl --output report.tsv
+    Robot->>Files: Generate report.tsv
+    Files-->>Robot: ✅ Created
+    Robot-->>Make: ✅ Report generated
+    
+    Make->>Robot: measure --input lco.owl --output metrics.tsv
+    Robot->>Files: Generate metrics.tsv
+    Files-->>Robot: ✅ Created
+    Robot-->>Make: ✅ Metrics generated
+    
+    Make->>Files: Analyze report.tsv for errors/warnings
+    Files-->>Make: Error/warning counts
+    Make-->>User: 🎯 Complete workflow executed
+    
+    Note over User,Files: Quality Control Workflow (make qc)
+    
+    User->>Make: make qc
+    
+    Make->>Robot: report --input lco.owl --output report.tsv
+    Robot->>Files: Generate report.tsv
+    Files-->>Robot: ✅ Created
+    Robot-->>Make: ✅ Report generated
+    
+    Make->>Robot: measure --input lco.owl --output metrics.tsv
+    Robot->>Files: Generate metrics.tsv
+    Files-->>Robot: ✅ Created
+    Robot-->>Make: ✅ Metrics generated
+    
+    Make->>Files: grep -c "ERROR" report.tsv
+    Files-->>Make: Error count: 0
+    Make->>Files: grep -c "WARN" report.tsv  
+    Files-->>Make: Warning count: 2
+    
+    Make-->>User: 📊 QC Summary: 0 errors, 2 warnings
+    
+    Note over User,Files: Validation Workflow (make validate-all)
+    
+    User->>Make: make validate-all
+    
+    Make->>Robot: --version
+    Robot-->>Make: Robot version info
+    Make-->>User: ✅ Robot working correctly
+    
+    Make->>Make: Execute 'all' workflow
+    Note over Make: (Runs complete 'all' sequence)
+    
+    Make->>Make: Execute 'qc' workflow  
+    Note over Make: (Runs complete 'qc' sequence)
+    
+    Make-->>User: 🎉 ODK setup fully functional!
+    
+    Note over User,Files: Maintenance Operations
+    
+    User->>Make: make clean
+    Make->>Files: Remove generated files
+    Files-->>Make: ✅ Files cleaned
+    Make-->>User: ✅ Cleanup completed
+    
+    User->>Make: make help
+    Make-->>User: 📋 Show all available targets

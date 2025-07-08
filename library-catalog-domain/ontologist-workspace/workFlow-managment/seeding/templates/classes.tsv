@@ -1,0 +1,9 @@
+ID	TYPE	A rdfs:label	A obo:IAO_0000115	SC %
+LCO:0000001	owl:Class	information resource	A resource that carries information	
+LCO:0000002	owl:Class	book	A written or printed work consisting of pages bound together	LCO:0000001
+LCO:0000003	owl:Class	agent	An entity that can perform actions	
+LCO:0000004	owl:Class	author	A person who writes books	LCO:0000003
+LCO:0000005	owl:Class	publisher	An organization that publishes books	LCO:0000003
+LCO:0000006	owl:Class	library	An institution that maintains collections of books	LCO:0000003
+LCO:0000007	owl:Class	category	A class of things sharing common characteristics	
+LCO:0000008	owl:Class	genre	A category of artistic composition	LCO:0000007

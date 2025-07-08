@@ -1,0 +1,124 @@
+flowchart TD
+    %% Entry points
+    START([User runs make target])
+    
+    %% Main targets
+    ALL[all]
+    VALIDATE[validate-setup]
+    TEST[test-robot]
+    WORKFLOW[workflow]
+    QC[qc]
+    VALIDATE_ALL[validate-all]
+    
+    %% Individual operations
+    MEASURE[measure]
+    REPORT[report]
+    MERGE[merge]
+    REASON[reason]
+    CONVERT[convert]
+    QUERY[query]
+    EXPORT[export]
+    CREATE_TERMS[create-terms]
+    STATS[stats]
+    
+    %% File dependencies
+    INPUT_OWL[(lco.owl)]
+    EDIT_OWL[(lco-edit.owl)]
+    METRICS_TSV[metrics.tsv]
+    REPORT_TSV[report.tsv]
+    ENHANCED_OWL[lco-enhanced.owl]
+    REASONED_OWL[lco-reasoned.owl]
+    CONVERTED_TTL[lco-converted.ttl]
+    QUERY_SPARQL[simple-query.sparql]
+    EXPORT_CSV[export-classes.csv]
+    NEW_TERMS_TTL[new-terms.ttl]
+    NEW_TERMS_OWL[new-terms.owl]
+    
+    %% Maintenance
+    CLEAN[clean]
+    CLEAN_ALL[clean-all]
+    HELP[help]
+    EXAMPLES[examples]
+    
+    %% Main workflow connections
+    START --> ALL
+    START --> WORKFLOW
+    START --> QC
+    START --> VALIDATE_ALL
+    START --> TEST
+    
+    %% ALL target dependencies
+    ALL --> VALIDATE
+    ALL --> MEASURE
+    ALL --> REPORT
+    ALL --> REASON
+    ALL --> CONVERT
+    
+    %% VALIDATE_ALL dependencies
+    VALIDATE_ALL --> TEST
+    VALIDATE_ALL --> ALL
+    VALIDATE_ALL --> QC
+    
+    %% WORKFLOW dependencies
+    WORKFLOW --> CREATE_TERMS
+    WORKFLOW --> MERGE
+    WORKFLOW --> REASON
+    WORKFLOW --> CONVERT
+    WORKFLOW --> QC
+    
+    %% QC dependencies
+    QC --> REPORT
+    QC --> MEASURE
+    
+    %% TEST dependencies
+    TEST --> VALIDATE
+    
+    %% Individual operation dependencies
+    MEASURE --> INPUT_OWL
+    MEASURE --> METRICS_TSV
+    
+    REPORT --> INPUT_OWL
+    REPORT --> REPORT_TSV
+    
+    REASON --> INPUT_OWL
+    REASON --> REASONED_OWL
+    
+    CONVERT --> INPUT_OWL
+    CONVERT --> CONVERTED_TTL
+    
+    MERGE --> EDIT_OWL
+    MERGE --> NEW_TERMS_OWL
+    MERGE --> ENHANCED_OWL
+    
+    QUERY --> QUERY_SPARQL
+    QUERY --> INPUT_OWL
+    
+    EXPORT --> INPUT_OWL
+    EXPORT --> EXPORT_CSV
+    
+    CREATE_TERMS --> NEW_TERMS_TTL
+    CREATE_TERMS --> NEW_TERMS_OWL
+    
+    STATS --> METRICS_TSV
+    
+    %% File creation dependencies
+    NEW_TERMS_OWL --> NEW_TERMS_TTL
+    
+    %% Maintenance targets
+    START --> CLEAN
+    START --> CLEAN_ALL
+    START --> HELP
+    START --> EXAMPLES
+    
+    %% Styling
+    classDef entryPoint fill:#e1f5fe
+    classDef mainTarget fill:#c8e6c9
+    classDef operation fill:#fff3e0
+    classDef file fill:#f3e5f5
+    classDef maintenance fill:#ffebee
+    
+    class START entryPoint
+    class ALL,WORKFLOW,QC,VALIDATE_ALL mainTarget
+    class MEASURE,REPORT,MERGE,REASON,CONVERT,QUERY,EXPORT,CREATE_TERMS,STATS,VALIDATE,TEST operation
+    class INPUT_OWL,EDIT_OWL,METRICS_TSV,REPORT_TSV,ENHANCED_OWL,REASONED_OWL,CONVERTED_TTL,QUERY_SPARQL,EXPORT_CSV,NEW_TERMS_TTL,NEW_TERMS_OWL file
+    class CLEAN,CLEAN_ALL,HELP,EXAMPLES maintenance

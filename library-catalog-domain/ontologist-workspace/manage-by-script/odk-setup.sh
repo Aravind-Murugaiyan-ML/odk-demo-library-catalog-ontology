@@ -150,7 +150,7 @@ echo -e "${YELLOW}📝 Creating learning templates...${NC}"
 mkdir -p src/ontology/templates
 
 # Basic classes template
-cat > src/ontology/templates/classes.tsv << 'EOF'
+cat >> ./templates/classes.tsv << 'EOF'
 ID	Label	Definition	Parent
 LCO:0000001	information resource	A resource that carries information	
 LCO:0000002	book	A written or printed work consisting of pages bound together	LCO:0000001
@@ -163,7 +163,7 @@ LCO:0000008	genre	A category of artistic composition characterized by similariti
 EOF
 
 # Properties template
-cat > src/ontology/templates/properties.tsv << 'EOF'
+cat > ./templates/properties.tsv << 'EOF'
 ID	Label	Definition	Domain	Range
 LCO:0000100	written by	Relates a book to its author	LCO:0000002	LCO:0000004
 LCO:0000101	published by	Relates a book to its publisher	LCO:0000002	LCO:0000005
@@ -172,7 +172,7 @@ LCO:0000103	available at	Relates a book to libraries where it's available	LCO:00
 EOF
 
 # Sample data template with relationships
-cat > src/ontology/templates/sample-data.tsv << 'EOF'
+cat > ./templates/sample-data.tsv << 'EOF'
 ID	Label	Definition	Parent	written_by	published_by	has_genre
 LCO:2000001	George Orwell	English novelist and journalist (1903-1950)	LCO:0000004			
 LCO:2000002	J.K. Rowling	British author known for Harry Potter series	LCO:0000004			

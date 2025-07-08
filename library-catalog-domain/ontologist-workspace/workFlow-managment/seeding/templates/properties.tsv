@@ -1,0 +1,5 @@
+ID	TYPE	A rdfs:label	A obo:IAO_0000115	A rdfs:domain	A rdfs:range
+LCO:0000100	owl:ObjectProperty	written by	Relates a book to its author	LCO:0000002	LCO:0000004
+LCO:0000101	owl:ObjectProperty	published by	Relates a book to its publisher	LCO:0000002	LCO:0000005
+LCO:0000102	owl:ObjectProperty	has genre	Relates a book to its genre	LCO:0000002	LCO:0000008
+LCO:0000103	owl:ObjectProperty	available at	Relates a book to libraries where it's available	LCO:0000002	LCO:0000006

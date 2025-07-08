@@ -1,0 +1,9 @@
+ID	TYPE	A rdfs:label	A obo:IAO_0000115	TI %
+LCO:2000001	owl:NamedIndividual	George Orwell	English novelist and journalist (1903-1950)	LCO:0000004
+LCO:2000002	owl:NamedIndividual	J.K. Rowling	British author known for Harry Potter series	LCO:0000004
+LCO:3000001	owl:NamedIndividual	Penguin Books	British publishing house	LCO:0000005
+LCO:3000002	owl:NamedIndividual	Bloomsbury	British publishing house	LCO:0000005
+LCO:4000001	owl:NamedIndividual	dystopian fiction	A genre featuring societies where life is miserable	LCO:0000008
+LCO:4000002	owl:NamedIndividual	fantasy	A genre of speculative fiction involving magical elements	LCO:0000008
+LCO:1000001	owl:NamedIndividual	1984	A dystopian novel by George Orwell	LCO:0000002
+LCO:1000002	owl:NamedIndividual	Harry Potter and the Philosopher's Stone	First novel in the Harry Potter series	LCO:0000002
