@@ -88,14 +88,37 @@ $(ENHANCED_ONTOLOGY): $(EDIT_ONTOLOGY) $(NEW_TERMS_OWL)
 		echo "⚠️  $(NEW_TERMS_OWL) not found, skipping merge"; \
 	fi
 
-# Apply reasoning to ontology
+# Apply reasoning to ontology (enhanced version if available)
 reason: $(REASONED_ONTOLOGY)
 
 $(REASONED_ONTOLOGY): $(INPUT_ONTOLOGY)
 	@echo "🧠 Applying ELK reasoner..."
-	@$(ROBOT) reason --reasoner ELK --input $(INPUT_ONTOLOGY) --output $(REASONED_ONTOLOGY)
+	@if [ -f "$(ENHANCED_ONTOLOGY)" ]; then \
+		echo "📋 Using enhanced ontology: $(ENHANCED_ONTOLOGY)"; \
+		$(ROBOT) reason --reasoner ELK --input $(ENHANCED_ONTOLOGY) --output $(REASONED_ONTOLOGY); \
+	else \
+		echo "📋 Using base ontology: $(INPUT_ONTOLOGY)"; \
+		$(ROBOT) reason --reasoner ELK --input $(INPUT_ONTOLOGY) --output $(REASONED_ONTOLOGY); \
+	fi
 	@echo "✅ Success! Generated $(REASONED_ONTOLOGY)"
 
+# Alternative: Always reason over enhanced ontology (requires merge first)
+reason-enhanced: $(ENHANCED_ONTOLOGY)
+	@echo "🧠 Applying ELK reasoner to enhanced ontology..."
+	@$(ROBOT) reason --reasoner ELK --input $(ENHANCED_ONTOLOGY) --output $(REASONED_ONTOLOGY)
+	@echo "✅ Success! Generated $(REASONED_ONTOLOGY) from enhanced ontology"
+
+# Alternative: Separate targets for different reasoning scenarios
+reason-base: $(INPUT_ONTOLOGY)
+	@echo "🧠 Applying ELK reasoner to base ontology..."
+	@$(ROBOT) reason --reasoner ELK --input $(INPUT_ONTOLOGY) --output lco-base-reasoned.owl
+	@echo "✅ Success! Generated lco-base-reasoned.owl"
+
+reason-enhanced-only: $(ENHANCED_ONTOLOGY)
+	@echo "🧠 Applying ELK reasoner to enhanced ontology..."
+	@$(ROBOT) reason --reasoner ELK --input $(ENHANCED_ONTOLOGY) --output lco-enhanced-reasoned.owl
+	@echo "✅ Success! Generated lco-enhanced-reasoned.owl"
+	
 # Convert ontology to different formats
 convert: $(CONVERTED_TTL)
 
